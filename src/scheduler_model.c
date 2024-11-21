@@ -17,21 +17,21 @@ void SCHED_MODEL_Init(scheduler_model_t* model)
     PROC_QUEUE_Init(&model->ready_queue);
     PROC_QUEUE_Init(&model->device_queue);
 
-    model->elapsed_time_ns = 0;
+    model->elapsed_time_ms = 0;
 }
 void SCHED_MODEL_Simulate(scheduler_model_t* model)
 {
-    if (model->elapsed_time_ns == 0) {
+    if (model->elapsed_time_ms == 0) {
         SCHED_MODEL_InitQueue(model, &model->job_queue);
     }
 
     int i = model->next_process_request_index;
-    if (i < model->process_list_size && model->process_list[i].request_time_ns == model->elapsed_time_ns * 1000000) {
+    if (i < model->process_list_size && model->process_list[i].request_time_ms == model->elapsed_time_ms) {
         PROC_QUEUE_Enqueue(&model->job_queue, &model->process_list[i]);
         SCHED_MODEL_NotifyQueueObserver(model);
         model->next_process_request_index++;
     }
-    model->elapsed_time_ns++;
+    model->elapsed_time_ms++;
 }
 
 void SCHED_MODEL_SetAlgorithm(scheduler_model_t* model, scheduler_algorithm_e sched_algo)
@@ -51,8 +51,8 @@ void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* proc
     *new_process = (process_t) {
         .pid             = process->pid,
         .priority        = process->priority,
-        .request_time_ns = process->request_time_ns,
-        .arrival_time_ns = process->request_time_ns,
+        .request_time_ms = process->request_time_ms,
+        .arrival_time_ms = process->request_time_ms,
         .pstate          = PROC_STATE_NEW,
         .prog_trace      = process->prog_trace,
     };
@@ -108,10 +108,10 @@ void SCHED_MODEL_RegisterQueueObserver(scheduler_model_t* model, const queue_obs
 
 void SCHED_MODEL_InitQueue(scheduler_model_t* model, process_queue_t* job_queue)
 {
-    // Sort the process list based on the request_time_ns
+    // Sort the process list based on the request_time_ms
     for (int i = 0; i < model->process_list_size - 1; i++) {
         for (int j = i + 1; j < model->process_list_size; j++) {
-            if (model->process_list[i].request_time_ns > model->process_list[j].request_time_ns) {
+            if (model->process_list[i].request_time_ms > model->process_list[j].request_time_ms) {
                 process_t temp         = model->process_list[i];
                 model->process_list[i] = model->process_list[j];
                 model->process_list[j] = temp;

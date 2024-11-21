@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
     int             pid;             // Process ID
     int             priority;        // Process priority
-    timestamp_t     request_time_ns; // Time at which the process was requested
+    timestamp_t     request_time_ms; // Time at which the process was requested
     program_trace_t prog_trace;      // Execution trace of the process
 } process_init_t;
 
@@ -48,8 +48,8 @@ typedef struct {
 typedef struct {
     int             pid;             // Process ID
     int             priority;        // Process priority
-    timestamp_t     request_time_ns; // Time of request
-    timestamp_t     arrival_time_ns; // Time of arrival in the scheduler
+    timestamp_t     request_time_ms; // Time of request
+    timestamp_t     arrival_time_ms; // Time of arrival in the scheduler
     process_state_e pstate;          // Current state of the process
     program_trace_t prog_trace;      // Execution trace of the process
 } process_t;

@@ -187,7 +187,7 @@ void OS_CTRL_AddProcess(os_controller_t* controller)
     process_init_t process = (process_init_t) {
         .pid = sim->pidCounter++,
         .priority = 0,
-        .request_time_ns = sim->arrivalTimeInput * 1000000,
+        .request_time_ms = sim->arrivalTimeInput,
         .prog_trace = {
             .name = "program",
             .num_of_record = 1,
@@ -201,7 +201,7 @@ void OS_CTRL_AddProcess(os_controller_t* controller)
 
     SCHED_MODEL_AddProcess(controller->model, &process);
     if (sim->processCount < MAX_PROCESSES) {
-        sim->processList[sim->processCount++] = (Process) { process.pid, process.request_time_ns / 1000000, sim->ioTimeInput,
+        sim->processList[sim->processCount++] = (Process) { process.pid, process.request_time_ms, sim->ioTimeInput,
             process.prog_trace.record[0].duration_ms, process.prog_trace.record[0].duration_ms, sim->cpuNumberInput, NEW };
         UpdateListViewContent(sim);
     }

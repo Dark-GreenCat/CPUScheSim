@@ -29,7 +29,7 @@ typedef struct {
 
 // Observer for scheduler-related events
 typedef struct {
-    void (*updateChanges)(void* this, timestamp_t timestamp_ns, const process_t* process,
+    void (*updateChanges)(void* this, timestamp_t timestamp_ms, const process_t* process,
         const char* description); // Logs scheduler changes
 } scheduler_observer_t;
 
@@ -48,7 +48,7 @@ typedef struct {
     process_queue_t       job_queue;
     process_queue_t       ready_queue;
     process_queue_t       device_queue;
-    int                   elapsed_time_ns;
+    int                   elapsed_time_ms;
 } scheduler_model_t;
 
 
