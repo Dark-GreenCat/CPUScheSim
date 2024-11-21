@@ -172,6 +172,32 @@ void UpdateQueueStatus(sim_view_t* sim)
     }
 }
 
+void SIM_VIEW_UpdateQueue(queue_observer_t* this, const process_queue_t* queue)
+{
+    sim_view_t* sim = NULL;
+    if (this->type == PROC_QUEUE_JOB)
+        sim = (sim_view_t*) this;
+    else if (this->type == PROC_QUEUE_READY)
+        sim = (sim_view_t*) (((unsigned long long) this) - sizeof(queue_observer_t));
+    sim->queueStatus[0] = '\0'; // Clear the queue status
+
+    // Add Job Queue Information
+    if (this->type == PROC_QUEUE_JOB) {
+        sim->queueStatusJob[0] = '\0';
+        strncat(sim->queueStatusJob, "Job Queue: ", sizeof(sim->queueStatusJob) - strlen(sim->queueStatusJob) - 1);
+        for (process_queue_node_t* process = queue->front; process != NULL; process = process->next) {
+            char job[16];
+            snprintf(job, sizeof(job), "P%d ", process->process->pid);
+            strncat(sim->queueStatusJob, job, sizeof(sim->queueStatusJob) - strlen(sim->queueStatusJob) - 1);
+        }
+    } else if (this->type == PROC_QUEUE_READY) {
+        sim->queueStatusReady[0] = '\0';
+        strncat(sim->queueStatus, "Ready Queue: ", sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
+    }
+
+    snprintf(sim->queueStatus, sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1, "%s\n%s", sim->queueStatusJob, sim->queueStatusReady);
+}
+
 
 void UpdateProcessInfo(sim_view_t* sim, int index)
 {

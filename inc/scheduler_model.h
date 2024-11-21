@@ -10,6 +10,7 @@
 #ifndef SCHEDULER_MODEL_H
 #define SCHEDULER_MODEL_H
 
+#include "process_queue.h"
 #include "shared_defs.h"
 #include "shared_types.h"
 
@@ -19,28 +20,6 @@
 #define SCHEDULER_OBSERVER_SIZE 1
 #define QUEUE_OBSERVER_SIZE     2
 
-// Structure for initializing a process with its details
-typedef struct {
-    int             pid;             // Process ID
-    int             priority;        // Process priority
-    timestamp_t     request_time_ns; // Time at which the process was requested
-    program_trace_t prog_trace;      // Execution trace of the process
-} process_init_t;
-
-// Structure representing the state of a process during simulation
-typedef struct {
-    int             pid;             // Process ID
-    int             priority;        // Process priority
-    timestamp_t     request_time_ns; // Time of request
-    timestamp_t     arrival_time_ns; // Time of arrival in the scheduler
-    process_state_e pstate;          // Current state of the process
-    program_trace_t prog_trace;      // Execution trace of the process
-} process_t;
-
-// Placeholder structure for managing queues
-typedef struct {
-    // Queue implementation details will be added here
-} queue_t;
 
 // Observer for process-related events
 typedef struct {
@@ -54,19 +33,22 @@ typedef struct {
         const char* description); // Logs scheduler changes
 } scheduler_observer_t;
 
-// Observer for queue-related events
-typedef struct {
-    void (*updateQueue)(void* this, const queue_t* queue); // Updates queue state
-} queue_observer_t;
-
 // Core scheduler model structure
 typedef struct {
-    scheduler_algorithm_e sched_algo;                              // Selected scheduling algorithm
-    process_t             process_list[PROCESS_LIST_SIZE_MAX];     // List of processes
-    int                   process_list_size;                       // Number of processes in the list
-    process_observer_t    proc_observer[PROCESS_OBSERVER_SIZE];    // Observers for process events
-    scheduler_observer_t  sched_observer[SCHEDULER_OBSERVER_SIZE]; // Observers for scheduler events
-    queue_observer_t      queue_observer[QUEUE_OBSERVER_SIZE];     // Observers for queue events
+    scheduler_algorithm_e sched_algo;                          // Selected scheduling algorithm
+    process_t             process_list[PROCESS_LIST_SIZE_MAX]; // List of processes
+    int                   process_list_size;                   // Number of processes in the list
+    int                   next_process_request_index;
+    process_observer_t*   proc_observer[PROCESS_OBSERVER_SIZE];    // Observers for process events
+    int                   proc_observer_list_size;                 // Number of process observer
+    scheduler_observer_t* sched_observer[SCHEDULER_OBSERVER_SIZE]; // Observers for scheduler events
+    int                   sched_observer_list_size;                // Number of scheduler observer
+    queue_observer_t*     queue_observer[QUEUE_OBSERVER_SIZE];     // Observers for queue events
+    int                   queue_observer_list_size;                // Number of queue observer
+    process_queue_t       job_queue;
+    process_queue_t       ready_queue;
+    process_queue_t       device_queue;
+    int                   elapsed_time_ns;
 } scheduler_model_t;
 
 
@@ -82,6 +64,12 @@ void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid);
 void SCHED_MODEL_RegisterProcessObserver(scheduler_model_t* model, const process_observer_t* proc_observer);
 void SCHED_MODEL_RegisterSchedulerObserver(scheduler_model_t* model, const scheduler_observer_t* sched_observer);
 void SCHED_MODEL_RegisterQueueObserver(scheduler_model_t* model, const queue_observer_t* queue_observer);
+
+/* Private API */
+void SCHED_MODEL_InitQueue(scheduler_model_t* model, process_queue_t* job_queue);
+void SCHED_MODEL_QueueToQueue(scheduler_model_t* model, process_queue_t* src_queue, process_queue_t* dest_queue);
+
+void SCHED_MODEL_NotifyQueueObserver(scheduler_model_t* model);
 
 
 /* Public API - Detailed description */

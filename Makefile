@@ -25,7 +25,7 @@ else
 endif
 
 # Source and Object Files
-SRC_FILES := $(SRC_DIR)/main.c $(SRC_DIR)/src/sim_view.c $(SRC_DIR)/src/os_controller.c
+SRC_FILES := $(SRC_DIR)/main.c $(SRC_DIR)/src/sim_view.c $(SRC_DIR)/src/os_controller.c $(SRC_DIR)/src/scheduler_model.c $(SRC_DIR)/src/process_queue.c
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 
 include config.mk

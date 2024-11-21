@@ -8,6 +8,8 @@
 
 #define MAX_PROCESSES 10
 #include "stdbool.h"
+#include "shared_defs.h"
+#include "shared_types.h"
 
 typedef enum { NEW, READY, RUNNING, WAITING, TERMINATED } ProcessState;
 
@@ -26,6 +28,8 @@ typedef struct {
 
 
 typedef struct {
+    queue_observer_t job_observer;
+    queue_observer_t ready_observer;
     float   progress;                   // Progress of the simulation
     int     currentTime;                // Current time in the simulation
     int     pidCounter;                 // Process ID counter
@@ -41,6 +45,8 @@ typedef struct {
     int     scrollIndex;                // Index for scrolling
     float   currentSize;                // Current size scaling factor
     char    logContent[5000];           // Content of the simulation log
+    char    queueStatusJob[100];           // Status of the queue
+    char    queueStatusReady[100];           // Status of the queue
     char    queueStatus[256];           // Status of the queue
     char    Performance[256];           // Performance metrics
     int     cpuTimeInput;               // CPU time input for new processes
@@ -82,6 +88,7 @@ void UpdateListViewContent(sim_view_t* sim);
 
 // Updates the queue status to display the current job queue and ready queue
 void UpdateQueueStatus(sim_view_t* sim);
+void SIM_VIEW_UpdateQueue(struct queue_observer_t* this, const process_queue_t* queue);
 
 // Updates information for the selected process in the info display
 void UpdateProcessInfo(sim_view_t* sim, int index);

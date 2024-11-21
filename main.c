@@ -5,9 +5,20 @@
 int main()
 {
     scheduler_model_t model;
+    SCHED_MODEL_Init(&model);
+
     os_controller_t controller = {
         .model = &model,
-        .view  = { .progress          = 0.0f,
+        .view  = { 
+            .job_observer = {
+                .type = PROC_QUEUE_JOB,
+                .updateQueue = SIM_VIEW_UpdateQueue,
+},
+.ready_observer = {
+    .type = PROC_QUEUE_READY,
+    .updateQueue = SIM_VIEW_UpdateQueue,
+},
+            .progress          = 0.0f,
              .currentTime             = 0,
              .pidCounter              = 1,
              .processCount            = 0,
@@ -38,7 +49,8 @@ int main()
              .runningProcessIndex     = -1,
              .processRunning          = false },
     };
-
+    SCHED_MODEL_RegisterQueueObserver(controller.model, &controller.view.job_observer);
+    SCHED_MODEL_RegisterQueueObserver(controller.model, &controller.view.ready_observer);
     OS_CTRL_Start(&controller);
 
     return 0;

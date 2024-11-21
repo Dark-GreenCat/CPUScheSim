@@ -36,4 +36,38 @@ typedef struct {
     program_trace_record_t record[PROGRAM_TRACE_RECORDS_MAX]; // Array of trace records (fixed size)
 } program_trace_t;
 
+// Structure for initializing a process with its details
+typedef struct {
+    int             pid;             // Process ID
+    int             priority;        // Process priority
+    timestamp_t     request_time_ns; // Time at which the process was requested
+    program_trace_t prog_trace;      // Execution trace of the process
+} process_init_t;
+
+// Structure representing the state of a process during simulation
+typedef struct {
+    int             pid;             // Process ID
+    int             priority;        // Process priority
+    timestamp_t     request_time_ns; // Time of request
+    timestamp_t     arrival_time_ns; // Time of arrival in the scheduler
+    process_state_e pstate;          // Current state of the process
+    program_trace_t prog_trace;      // Execution trace of the process
+} process_t;
+
+typedef struct node {
+    process_t*   process;
+    struct node* next;
+} process_queue_node_t;
+
+typedef struct {
+    process_queue_node_t* front;
+    process_queue_node_t* rear;
+} process_queue_t;
+
+// Observer for queue-related events
+typedef struct queue_observer_t {
+    process_queue_e type;
+    void (*updateQueue)(struct queue_observer_t* this, const process_queue_t* queue); // Updates queue state
+} queue_observer_t;
+
 #endif

@@ -34,4 +34,10 @@ typedef enum {
     PROC_STATE_TERMINATED // Process has finished execution
 } process_state_e;
 
+typedef enum {
+    PROC_QUEUE_JOB,
+    PROC_QUEUE_READY,
+    PROC_QUEUE_DEVICE
+} process_queue_e;
+
 #endif
