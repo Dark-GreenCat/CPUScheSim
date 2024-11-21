@@ -29,21 +29,8 @@ typedef struct {
 
 // Core scheduler model structure
 typedef struct {
-    scheduler_algorithm_e sched_algo;                          // Selected scheduling algorithm
-    process_t             process_list[PROCESS_LIST_SIZE_MAX]; // List of processes
-    int                   process_list_size;                   // Number of processes in the list
-    int                   next_process_request_index;
-    process_observer_t*   proc_observer[PROCESS_OBSERVER_SIZE];    // Observers for process events
-    int                   proc_observer_list_size;                 // Number of process observer
-    scheduler_observer_t* sched_observer[SCHEDULER_OBSERVER_SIZE]; // Observers for scheduler events
-    int                   sched_observer_list_size;                // Number of scheduler observer
-    queue_observer_t*     queue_observer[QUEUE_OBSERVER_SIZE];     // Observers for queue events
-    int                   queue_observer_list_size;                // Number of queue observer
-    process_queue_t       job_queue;
-    int                   job_queue_delay;
-    int                   job_queue_counter;
-    process_queue_t       ready_queue;
-    process_queue_t       device_queue;
+    scheduler_algorithm_e sched_algo; // Selected scheduling algorithm
+    process_list_t        process_list;
     int                   elapsed_time_ms;
 } scheduler_model_t;
 
@@ -51,12 +38,14 @@ typedef struct {
 /* Public API - Short declaration */
 
 void SCHED_MODEL_Init(scheduler_model_t* model);
+void SCHED_MODEL_Destructor(scheduler_model_t* model);
 void SCHED_MODEL_Simulate(scheduler_model_t* model);
 
 void SCHED_MODEL_SetAlgorithm(scheduler_model_t* model, scheduler_algorithm_e sched_algo);
 void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* process);
 void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid);
 
+#if 0
 void SCHED_MODEL_RegisterProcessObserver(scheduler_model_t* model, const process_observer_t* proc_observer);
 void SCHED_MODEL_RegisterSchedulerObserver(scheduler_model_t* model, const scheduler_observer_t* sched_observer);
 void SCHED_MODEL_RegisterQueueObserver(scheduler_model_t* model, const queue_observer_t* queue_observer);
@@ -66,7 +55,6 @@ void SCHED_MODEL_InitQueue(scheduler_model_t* model, process_queue_t* job_queue)
 void SCHED_MODEL_QueueToQueue(scheduler_model_t* model, process_queue_t* src_queue, process_queue_t* dest_queue);
 
 void SCHED_MODEL_NotifyQueueObserver(scheduler_model_t* model);
-
 
 /* Public API - Detailed description */
 
@@ -158,4 +146,5 @@ void SCHED_MODEL_RegisterSchedulerObserver(scheduler_model_t* model, const sched
 void SCHED_MODEL_RegisterQueueObserver(scheduler_model_t* model, const queue_observer_t* queue_observer);
 
 
+#endif
 #endif

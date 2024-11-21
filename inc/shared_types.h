@@ -54,26 +54,16 @@ typedef struct {
     program_trace_t prog_trace;      // Execution trace of the process
 } process_t;
 
-typedef struct node {
-    process_t*   process;
-    struct node* next;
-} process_queue_node_t;
+// // Observer for queue-related events
+// typedef struct queue_observer_t {
+//     process_queue_e type;
+//     void (*updateQueue)(struct queue_observer_t* this, const process_queue_t* queue); // Updates queue state
+// } queue_observer_t;
 
-typedef struct {
-    process_queue_node_t* front;
-    process_queue_node_t* rear;
-} process_queue_t;
-
-// Observer for queue-related events
-typedef struct queue_observer_t {
-    process_queue_e type;
-    void (*updateQueue)(struct queue_observer_t* this, const process_queue_t* queue); // Updates queue state
-} queue_observer_t;
-
-// Observer for process-related events
-typedef struct {
-    void (*updateProcessInfo)(void* this, const process_t* process);    // Updates process info
-    void (*updateCurrentProcess)(void* this, const process_t* process); // Updates the current process
-} process_observer_t;
+// // Observer for process-related events
+// typedef struct {
+//     void (*updateProcessInfo)(void* this, const process_t* process);    // Updates process info
+//     void (*updateCurrentProcess)(void* this, const process_t* process); // Updates the current process
+// } process_observer_t;
 
 #endif

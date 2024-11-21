@@ -3,12 +3,19 @@
 
 #include "shared_defs.h"
 #include "shared_types.h"
+#include "queue.h"
 
-void       PROC_QUEUE_Init(process_queue_t* queue);
-int        PROC_QUEUE_IsEmpty(process_queue_t* queue);
-void       PROC_QUEUE_Enqueue(process_queue_t* queue, process_t* process);
-process_t* PROC_QUEUE_Dequeue(process_queue_t* queue);
-process_t* PROC_QUEUE_GetByPID(process_queue_t* queue, int pid);
-process_t* PROC_QUEUE_DequeueByPID(process_queue_t* queue, int pid);
+
+typedef struct node {
+    queue_node_t link;
+    process_t*   process;
+} process_node_t;
+
+typedef struct {
+    queue_t queue;
+} process_list_t;
+
+process_node_t* PROC_QUEUE_NodeCreate(process_t* process);
+void PROC_QUEUE_NodeFreeAll(process_list_t* list);
 
 #endif // PROCESS_QUEUE_H

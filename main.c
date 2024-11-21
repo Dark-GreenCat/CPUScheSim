@@ -7,4 +7,6 @@ int main()
     OS_CTRL_Init(&controller, &model);
 
     SIM_VIEW_LaunchWindows(&controller.view);
+
+    SCHED_MODEL_Destructor(&model);
 }
