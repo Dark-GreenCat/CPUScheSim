@@ -70,4 +70,10 @@ typedef struct queue_observer_t {
     void (*updateQueue)(struct queue_observer_t* this, const process_queue_t* queue); // Updates queue state
 } queue_observer_t;
 
+// Observer for process-related events
+typedef struct {
+    void (*updateProcessInfo)(void* this, const process_t* process);    // Updates process info
+    void (*updateCurrentProcess)(void* this, const process_t* process); // Updates the current process
+} process_observer_t;
+
 #endif

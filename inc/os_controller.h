@@ -13,30 +13,22 @@
 
 #include "scheduler_model.h"
 #include "sim_view.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 // Structure representing the OS controller
 typedef struct {
-    scheduler_model_t* model; // Pointer to the scheduler model.
     sim_view_t         view;  // Simulation view for displaying scheduler and process information.
+    scheduler_model_t* model; // Pointer to the scheduler model.
 } os_controller_t;
 
 
 /* Public API - Short declaration */
+void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model);
 
-void OS_CTRL_Start(os_controller_t* controller);
-
-void OS_CTRL_ChangeAlgorithm(os_controller_t* controller);
-void OS_CTRL_AddProcess(os_controller_t* controller);
-void OS_CTRL_DeleteProcess(os_controller_t* controller);
-
-void OS_CTRL_DisplayProcessInfo(os_controller_t* controller);
-void OS_CTRL_StartScheduler(os_controller_t* controller);
-void OS_CTRL_EnableContextSwitch(os_controller_t* controller);
+void OS_CTRL_AddProcess(view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
+    int total_io_burst_ms, int num_of_cpu_burst);
 
 
+#if 0
 /* Public API - Detailed description */
 
 /**
@@ -57,7 +49,8 @@ void OS_CTRL_ChangeAlgorithm(os_controller_t* controller);
  *
  * @param controller Pointer to the OS controller.
  */
-void OS_CTRL_AddProcess(os_controller_t* controller);
+void OS_CTRL_AddProcess(
+    void* this, int pid, int request_time_ms, int total_cpu_burst_ms, int total_io_burst_ms, int num_of_cpu_burst);
 
 /**
  * @brief Deletes a process from the scheduler model.
@@ -98,5 +91,6 @@ void OS_CTRL_StartScheduler(os_controller_t* controller);
  * @param controller Pointer to the OS controller.
  */
 void OS_CTRL_EnableContextSwitchTime(os_controller_t* controller);
+#endif
 
 #endif

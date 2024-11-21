@@ -1,11 +1,12 @@
 # Compiler and Flags
 CC := gcc
 CCFLAGS := \
-    -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wundef -Wpadded \
+    -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wundef \
 	-Wdouble-promotion -Wformat=2 -Wno-unused-parameter -Wcast-align=strict \
     -Wpointer-arith -Wlogical-op -Wnull-dereference -Wfloat-equal \
     -fno-common -fstack-protector-strong -D_FORTIFY_SOURCE=2 \
     -O0 -g
+#-Wpadded
 
 RAYLIB_FLAGS := -lraylib
 RAYLIB_INC_DIR := raylib/include

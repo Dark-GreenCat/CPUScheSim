@@ -21,12 +21,6 @@
 #define QUEUE_OBSERVER_SIZE     2
 
 
-// Observer for process-related events
-typedef struct {
-    void (*updateProcessInfo)(void* this, const process_t* process);    // Updates process info
-    void (*updateCurrentProcess)(void* this, const process_t* process); // Updates the current process
-} process_observer_t;
-
 // Observer for scheduler-related events
 typedef struct {
     void (*updateChanges)(void* this, timestamp_t timestamp_ms, const process_t* process,

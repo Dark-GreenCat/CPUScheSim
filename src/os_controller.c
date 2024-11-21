@@ -1,75 +1,32 @@
 #include "os_controller.h"
 
-void OS_CTRL_Start(os_controller_t* controller)
+void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model)
 {
+    controller->model = model;
 
+    SCHED_MODEL_Init(controller->model);
+    SIM_VIEW_Init(&controller->view, (view_interface_t) {OS_CTRL_AddProcess});
 }
 
-void OS_CTRL_AddProcess(os_controller_t* controller)
+#warning "OS_CTRL_AddProcess currently has not supported {total_io_burst_ms, num_of_cpu_burst} yet"
+void OS_CTRL_AddProcess(view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
+    int total_io_burst_ms, int num_of_cpu_burst)
 {
-    sim_view_t* sim = &controller->view;
-
-    process_init_t process = (process_init_t) {
-        .pid = sim->pidCounter++,
+    os_controller_t* controller = (os_controller_t*) this;
+    process_init_t process_info = {
+        .pid = pid,
         .priority = 0,
-        .request_time_ms = sim->requestTimeInput,
+        .request_time_ms = request_time_ms,
         .prog_trace = {
-            .name = "program",
-            .num_of_record = 1,
+            .name = "",
             .current_index = 0,
+            .num_of_record = 1,
             .record[0] = {
-                .duration_ms = sim->cpuTimeInput,
+                .duration_ms = total_cpu_burst_ms,
                 .prog_state = PROG_STATE_CPU,
             },
         },
     };
 
-    SCHED_MODEL_AddProcess(controller->model, &process);
-    if (sim->processCount < MAX_PROCESSES) {
-        sim->processList[sim->processCount++] = (Process) { process.pid, process.request_time_ms, sim->ioTimeInput,
-            process.prog_trace.record[0].duration_ms, process.prog_trace.record[0].duration_ms, sim->cpuNumberInput, NEW };
-        // UpdateListViewContent(sim);
-    }
-}
-
-void OS_CTRL_DeleteProcess(os_controller_t* controller)
-{
-    sim_view_t* sim = &controller->view;
-
-    if (sim->activeItem >= 0 && sim->activeItem < sim->processCount) {
-        for (int i = sim->activeItem; i < sim->processCount - 1; i++) {
-            sim->processList[i] = sim->processList[i + 1];
-        }
-        sim->processCount--;
-        sim->activeItem = -1;
-        // UpdateListViewContent(sim);
-        sim->PInfo[0] = '\0';
-    } else {
-        sim->showMessageBox = true;
-        sim->messageType    = 2;
-    }
-}
-
-void OS_CTRL_StartScheduler(os_controller_t* controller)
-{
-    sim_view_t* sim = &controller->view;
-
-    SCHED_MODEL_Simulate(controller->model);
-
-    // JobQueue(sim);
-    // StartScheduler(sim);
-    // TerminateProcessIfComplete(sim);
-    // UpdateQueueStatus(sim);
-    // sim->currentTime++;
-    // if (AllProcessesTerminated(sim)) {
-    //     sim->schedulerStarted = false;
-    //     char logMessage[64];
-    //     snprintf(logMessage, sizeof(logMessage), "All processes completed at time %d\n", sim->currentTime);
-    //     strncat(sim->logContent, logMessage, sizeof(sim->logContent) - strlen(sim->logContent) - 1);
-    //     for (int i = 0; i < sim->processCount; i++) {
-    //         sim->processList[i].state        = NEW;
-    //         sim->processList[i].cpuBurstTime = sim->processList[i].originalCpuBurstTime;
-    //     }
-    //     sim->currentTime = 0;
-    // }
+    SCHED_MODEL_AddProcess(controller->model, &process_info);
 }

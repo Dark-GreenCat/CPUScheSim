@@ -1,6 +1,9 @@
 #include "scheduler_model.h"
 #include "os_controller.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 void SCHED_MODEL_Init(scheduler_model_t* model)
 {
     model->sched_algo                 = SCHED_ALGO_FCFS;
