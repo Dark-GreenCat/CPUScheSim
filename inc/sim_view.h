@@ -15,7 +15,7 @@ typedef enum { NEW, READY, RUNNING, WAITING, TERMINATED } ProcessState;
 
 typedef struct {
     int          pid;
-    int          arrivalTime;
+    int          requestTime;
     int          ioBurstTime;
     int          cpuBurstTime;
     int          originalCpuBurstTime;
@@ -51,14 +51,14 @@ typedef struct {
     char    Performance[256];           // Performance metrics
     int     cpuTimeInput;               // CPU time input for new processes
     int     ioTimeInput;                // I/O time input for new processes
-    int     arrivalTimeInput;           // Arrival time input for new processes
+    int     requestTimeInput;           // Request time input for new processes
     int     cpuNumberInput;             // CPU number input (if applicable)
     char    PInfo[128];                 // Process information
     char    listViewContent[256];       // List view content (for process details)
     // Textbox edit states
     bool cpuTimeEdit;     // Flag for editing CPU time
     bool ioTimeEdit;      // Flag for editing I/O time
-    bool arrivalTimeEdit; // Flag for editing arrival time
+    bool requestTimeEdit; // Flag for editing request time
     bool cpuNumberEdit;   // Flag for editing CPU number
     // Define base text size for scaling
     int  baseTextSize;        // Base text size for scaling

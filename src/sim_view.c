@@ -45,20 +45,20 @@ void SIM_VIEW_LaunchWindows(sim_view_t* sim)
                 GetMousePosition(), (Rectangle) { 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY })
             && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             sim->cpuTimeEdit = true;
-            sim->ioTimeEdit = sim->arrivalTimeEdit = sim->cpuNumberEdit = false;
+            sim->ioTimeEdit = sim->requestTimeEdit = sim->cpuNumberEdit = false;
         }
 
         if (CheckCollisionPointRec(
                 GetMousePosition(), (Rectangle) { 130 * scaleX, 150 * scaleY, 100 * scaleY, 30 * scaleY })
             && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             sim->ioTimeEdit  = true;
-            sim->cpuTimeEdit = sim->arrivalTimeEdit = sim->cpuNumberEdit = false;
+            sim->cpuTimeEdit = sim->requestTimeEdit = sim->cpuNumberEdit = false;
         }
 
         if (CheckCollisionPointRec(
                 GetMousePosition(), (Rectangle) { 130 * scaleX, 190 * scaleY, 100 * scaleY, 30 * scaleY })
             && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            sim->arrivalTimeEdit = true;
+            sim->requestTimeEdit = true;
             sim->cpuTimeEdit = sim->ioTimeEdit = sim->cpuNumberEdit = false;
         }
 
@@ -66,16 +66,16 @@ void SIM_VIEW_LaunchWindows(sim_view_t* sim)
                 GetMousePosition(), (Rectangle) { 130 * scaleX, 230 * scaleY, 100 * scaleY, 30 * scaleY })
             && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             sim->cpuNumberEdit = true;
-            sim->cpuTimeEdit = sim->ioTimeEdit = sim->arrivalTimeEdit = false;
+            sim->cpuTimeEdit = sim->ioTimeEdit = sim->requestTimeEdit = false;
         }
 
-        // User input fields for CPU, IO, Arrival Time, and CPU Burst Number
+        // User input fields for CPU, IO, Request Time, and CPU Burst Number
         GuiValueBox((Rectangle) { 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t",
             &sim->cpuTimeInput, 0, 300, sim->cpuTimeEdit);
         GuiValueBox((Rectangle) { 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t",
             &sim->ioTimeInput, 0, 300, sim->ioTimeEdit);
-        GuiValueBox((Rectangle) { 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Arrival time\t",
-            &sim->arrivalTimeInput, 0, 300, sim->arrivalTimeEdit);
+        GuiValueBox((Rectangle) { 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Request time\t",
+            &sim->requestTimeInput, 0, 300, sim->requestTimeEdit);
         GuiValueBox((Rectangle) { 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t",
             &sim->cpuNumberInput, 0, 10, sim->cpuNumberEdit);
 

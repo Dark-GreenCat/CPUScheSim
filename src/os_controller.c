@@ -12,7 +12,7 @@ void OS_CTRL_AddProcess(os_controller_t* controller)
     process_init_t process = (process_init_t) {
         .pid = sim->pidCounter++,
         .priority = 0,
-        .request_time_ms = sim->arrivalTimeInput,
+        .request_time_ms = sim->requestTimeInput,
         .prog_trace = {
             .name = "program",
             .num_of_record = 1,
