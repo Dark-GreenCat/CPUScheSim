@@ -3,229 +3,173 @@
 #include <stdio.h>
 #include <string.h>
 
-void calculateMetrics(sim_view_t* sim)
+void SIM_VIEW_LaunchWindows(sim_view_t* sim)
 {
-    int totalCpuTimeUsed    = 0;
-    int totalWaitingTime    = 0;
-    int totalTurnaroundTime = 0;
+    InitWindow(sim->baseWidth, sim->baseHeight, "CPU Scheduler Simulator");
+    SetTargetFPS(60);
 
-    for (int i = 0; i < sim->processCount; i++) {
-        // Calculate individual process waiting and turnaround times
-        sim->processList[i].waitingTime = sim->processList[i].completionTime - sim->processList[i].arrivalTime
-                                          - sim->processList[i].originalCpuBurstTime;
-        sim->processList[i].turnaroundTime = sim->processList[i].completionTime - sim->processList[i].arrivalTime;
+    while (!WindowShouldClose()) {
+        // Calculate screen scaling
+        int   width  = GetScreenWidth();
+        int   height = GetScreenHeight();
+        float scaleX = (float) width / sim->baseWidth;
+        float scaleY = (float) height / sim->baseHeight;
 
-        // Sum up CPU time, waiting time, and turnaround time
-        totalCpuTimeUsed += sim->processList[i].originalCpuBurstTime;
-        totalWaitingTime += sim->processList[i].waitingTime;
-        totalTurnaroundTime += sim->processList[i].turnaroundTime;
-    }
+        // Calculate the scaled text size based on window height
+        int scaledTextSize = (int) (sim->baseTextSize * scaleY * 0.6);
 
-    // Calculate CPU Utilization, Throughput, Average Waiting Time, and Average Turnaround Time
-    float cpuUtilization        = ((float) totalCpuTimeUsed / sim->currentTime) * 100.0f;
-    float throughput            = (float) sim->processCount / sim->currentTime;
-    float averageWaitingTime    = (float) totalWaitingTime / sim->processCount;
-    float averageTurnaroundTime = (float) totalTurnaroundTime / sim->processCount;
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
 
-    // Display the calculated metrics
-    sprintf(sim->Performance,
-        "CPU Utilization: %.2f%%\n"
-        "Throughput: %.2f processes/unit time\n"
-        "Average Waiting Time: %.2f units\n"
-        "Average Turnaround Time: %.2f units",
-        cpuUtilization, throughput, averageWaitingTime, averageTurnaroundTime);
-}
+        // Title label
+        GuiSetStyle(DEFAULT, TEXT_SIZE, scaledTextSize + 10); // Add extra size for the title
+        GuiLabel((Rectangle) { 250 * scaleX, 20 * scaleY, 500 * scaleX, 30 * scaleY }, "CPU SCHEDULING SIMULATOR");
 
+        // Normal labels and combo box
+        GuiSetStyle(DEFAULT, TEXT_SIZE, scaledTextSize); // Reset text size for normal labels
 
-void FCFS_Scheduler(sim_view_t* sim)
-{
-    if (!sim->processRunning) {
-        int earliestArrival  = __INT_MAX__;
-        int nextProcessIndex = -1;
+        // Scheduler combo box
+        if (GuiComboBox((Rectangle) { 20 * scaleX, 20 * scaleY, 210 * scaleX, 30 * scaleY },
+                "FCFS;RR;SJF;SRTF;Priority Scheduling", &sim->selectedScheduler)) { }
 
-        // Find the READY process with the earliest arrival time
+        // Add/Delete Process buttons
+        if (GuiButton((Rectangle) { 20 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Add Process")) {
+            // OS_CTRL_AddProcess(controller);
+        }
+        if (GuiButton((Rectangle) { 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {
+            // OS_CTRL_DeleteProcess(controller);
+        }
+
+        // Toggle edit mode for different inputs
+        if (CheckCollisionPointRec(
+                GetMousePosition(), (Rectangle) { 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY })
+            && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            sim->cpuTimeEdit = true;
+            sim->ioTimeEdit = sim->arrivalTimeEdit = sim->cpuNumberEdit = false;
+        }
+
+        if (CheckCollisionPointRec(
+                GetMousePosition(), (Rectangle) { 130 * scaleX, 150 * scaleY, 100 * scaleY, 30 * scaleY })
+            && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            sim->ioTimeEdit  = true;
+            sim->cpuTimeEdit = sim->arrivalTimeEdit = sim->cpuNumberEdit = false;
+        }
+
+        if (CheckCollisionPointRec(
+                GetMousePosition(), (Rectangle) { 130 * scaleX, 190 * scaleY, 100 * scaleY, 30 * scaleY })
+            && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            sim->arrivalTimeEdit = true;
+            sim->cpuTimeEdit = sim->ioTimeEdit = sim->cpuNumberEdit = false;
+        }
+
+        if (CheckCollisionPointRec(
+                GetMousePosition(), (Rectangle) { 130 * scaleX, 230 * scaleY, 100 * scaleY, 30 * scaleY })
+            && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            sim->cpuNumberEdit = true;
+            sim->cpuTimeEdit = sim->ioTimeEdit = sim->arrivalTimeEdit = false;
+        }
+
+        // User input fields for CPU, IO, Arrival Time, and CPU Burst Number
+        GuiValueBox((Rectangle) { 130 * scaleX, 110 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU time\t",
+            &sim->cpuTimeInput, 0, 300, sim->cpuTimeEdit);
+        GuiValueBox((Rectangle) { 130 * scaleX, 150 * scaleY, 100 * scaleX, 30 * scaleY }, "IO time\t",
+            &sim->ioTimeInput, 0, 300, sim->ioTimeEdit);
+        GuiValueBox((Rectangle) { 130 * scaleX, 190 * scaleY, 100 * scaleX, 30 * scaleY }, "Arrival time\t",
+            &sim->arrivalTimeInput, 0, 300, sim->arrivalTimeEdit);
+        GuiValueBox((Rectangle) { 130 * scaleX, 230 * scaleY, 100 * scaleX, 30 * scaleY }, "CPU burst Num\t",
+            &sim->cpuNumberInput, 0, 10, sim->cpuNumberEdit);
+
+        // Process Information TextBox
+        GuiTextBox((Rectangle) { 20 * scaleX, 280 * scaleY, 200 * scaleX, 90 * scaleY }, sim->PInfo, sizeof(sim->PInfo),
+            false);
+
+        // Process list with scrollable view
+        GuiListView((Rectangle) { 20 * scaleX, 360 * scaleY, 200 * scaleX, 200 * scaleY }, sim->listViewContent,
+            &sim->scrollIndex, &sim->activeItem);
+
+        // Log display
+        GuiLabel((Rectangle) { 250 * scaleX, 70 * scaleY, 500 * scaleX, 20 * scaleY }, "Changes: ");
+        GuiTextBox((Rectangle) { 250 * scaleX, 90 * scaleY, 355 * scaleX, 270 * scaleY }, sim->logContent,
+            sizeof(sim->logContent), false);
+        GuiCheckBox((Rectangle) { 250 * scaleX, 400 * scaleY, 20 * scaleX, 20 * scaleY },
+            "Enable Random Context Switching", &sim->contextSwitchingEnabled);
+
+        // Progress bars for processes
         for (int i = 0; i < sim->processCount; i++) {
-            if (sim->processList[i].state == READY && sim->processList[i].arrivalTime <= sim->currentTime) {
-                if (sim->processList[i].arrivalTime < earliestArrival) {
-                    earliestArrival  = sim->processList[i].arrivalTime;
-                    nextProcessIndex = i;
+            float progress = 1.0f - (float) sim->processList[i].cpuBurstTime / sim->processList[i].originalCpuBurstTime;
+            GuiProgressBar((Rectangle) { 615 * scaleX, (90 + 33 * i) * scaleY, 100 * scaleX, 30 * scaleY }, NULL, NULL,
+                &progress, 0.0f, 1.0f);
+            char label[20];
+            sprintf(label, "P%d", i); // Label with process index
+            DrawText(label, 730 * scaleX, (95 + 33 * i) * scaleY, 20 * scaleX, DARKGRAY);
+        }
+
+        // Display current process or CPU status
+        if (sim->processRunning && sim->runningProcessIndex != -1) {
+            char cpuStatus[64];
+            snprintf(cpuStatus, sizeof(cpuStatus), "CPU status: P%d ", sim->processList[sim->runningProcessIndex].pid);
+            GuiLabel((Rectangle) { 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, cpuStatus);
+        } else {
+            GuiLabel((Rectangle) { 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "CPU status: Idle");
+        }
+
+        // Queue display
+        GuiTextBox((Rectangle) { 250 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, sim->queueStatus,
+            sizeof(sim->queueStatus), false);
+
+        // Performance results display
+        GuiTextBox((Rectangle) { 520 * scaleX, 450 * scaleY, 260 * scaleX, 110 * scaleY }, sim->Performance,
+            sizeof(sim->Performance), false);
+        GuiLabel((Rectangle) { 520 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "Performance");
+
+        // Start Scheduling Button
+        if (GuiButton((Rectangle) { 250 * scaleX, 370 * scaleY, 200 * scaleX, 20 * scaleY }, "Start")) {
+            snprintf(sim->logContent, sizeof(sim->logContent), "Start!\n");
+            strncat(sim->logContent, "Timestamp - Pid - Changes - State\n",
+                sizeof(sim->logContent) - strlen(sim->logContent) - 1);
+            sim->schedulerStarted = true;
+        }
+
+        // Call the scheduler start function
+        if (sim->schedulerStarted) {
+            // OS_CTRL_StartScheduler(controller);
+        }
+
+        // Export to CSV button
+        if (GuiButton((Rectangle) { 650 * scaleX, 570 * scaleY, 100 * scaleX, 30 * scaleY }, "Export to .csv")) { }
+
+        // Informations button
+        if (GuiButton((Rectangle) { 20 * scaleX, 580 * scaleY, 100 * scaleX, 30 * scaleY }, "Informations")) {
+            sim->showMessageBox = true;
+            sim->messageType    = 1;
+        }
+
+        // Display MessageBox
+        if (sim->showMessageBox) {
+            if (sim->messageType == 1) {
+                int result = GuiMessageBox((Rectangle) { 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
+                    "#196#CPU SCHEDULING SIMULATOR", "Devs: Pham Tuan Phong 20214039, Tran Quang Huy 20210428", "OK");
+                if (result >= 0) {
+                    sim->showMessageBox = false;
+                    sim->messageType    = 0;
+                }
+            } else if (sim->messageType == 2) {
+                int result = GuiMessageBox((Rectangle) { 85 * scaleX, 70 * scaleY, 400 * scaleX, 200 * scaleY },
+                    "#196#CPU SCHEDULING SIMULATOR", "Please select a process to delete", "OK");
+                if (result >= 0) {
+                    sim->showMessageBox = false;
+                    sim->messageType    = 0;
                 }
             }
         }
 
-        if (nextProcessIndex != -1) {
-            sim->runningProcessIndex                         = nextProcessIndex;
-            sim->processList[sim->runningProcessIndex].state = RUNNING;
-            sim->processRunning                              = true;
-
-            char logMessage[64];
-            snprintf(logMessage, sizeof(logMessage), "%d - P%d - started running - RUNNING\n", sim->currentTime,
-                sim->processList[sim->runningProcessIndex].pid);
-            strncat(sim->logContent, logMessage, sizeof(sim->logContent) - strlen(sim->logContent) - 1);
+        // Display selected process information
+        if (sim->activeItem != -1) {
+            // UpdateProcessInfo(sim, sim->activeItem);
         }
-    }
-}
 
-void TerminateProcessIfComplete(sim_view_t* sim)
-{
-    if (sim->processRunning && sim->runningProcessIndex != -1) {
-        // Decrement CPU burst time
-        sim->processList[sim->runningProcessIndex].cpuBurstTime--;
-
-        // Check if the process has completed
-        if (sim->processList[sim->runningProcessIndex].cpuBurstTime <= 0) {
-            sim->processList[sim->runningProcessIndex].state          = TERMINATED;
-            sim->processRunning                                       = false;
-            sim->processList[sim->runningProcessIndex].completionTime = sim->currentTime + 1;
-
-            // Log the termination with the correct current time
-            char logMessage[64];
-            snprintf(logMessage, sizeof(logMessage), "%d - P%d - terminated - TERMINATED\n", sim->currentTime + 1,
-                sim->processList[sim->runningProcessIndex].pid);
-            strncat(sim->logContent, logMessage, sizeof(sim->logContent) - strlen(sim->logContent) - 1);
-
-            sim->runningProcessIndex = -1; // Reset the running process index
-        }
-    }
-}
-
-
-void StartScheduler(sim_view_t* sim)
-{
-    switch (sim->selectedScheduler) {
-    case 0:
-        FCFS_Scheduler(sim);
-        break;
-    case 1:
-        // Implement Round-Robin scheduling logic here
-        break;
-    case 2:
-        // Implement SJF scheduling logic here
-        break;
-    case 3:
-        // Implement SRTF scheduling logic here
-        break;
-    case 4:
-        // Implement Priority scheduling logic here
-        break;
-    default:
-        break;
-    }
-}
-
-
-void JobQueue(sim_view_t* sim)
-{
-    for (int i = 0; i < sim->processCount; i++) {
-        if (sim->processList[i].arrivalTime == sim->currentTime && sim->processList[i].state == NEW) {
-            sim->processList[i].state = READY;
-            char logMessage[64];
-            snprintf(logMessage, sizeof(logMessage), "%d - P%d - entered the ready queue - READY\n", sim->currentTime,
-                sim->processList[i].pid);
-            strncat(sim->logContent, logMessage,
-                sizeof(sim->logContent) - strlen(sim->logContent) - 1); // Append log message
-        }
+        EndDrawing();
     }
 
-    // Immediately check for the next process to run if CPU is free
-    if (!sim->processRunning) {
-        StartScheduler(sim);
-    }
-}
-
-
-
-void UpdateListViewContent(sim_view_t* sim)
-{
-    sim->listViewContent[0] = '\0';
-    for (int i = 0; i < sim->processCount; i++) {
-        char processName[32];
-        snprintf(processName, sizeof(processName), "Process %d;", sim->processList[i].pid);
-        strncat(sim->listViewContent, processName, sizeof(sim->listViewContent) - strlen(sim->listViewContent) - 1);
-    }
-}
-
-
-void UpdateQueueStatus(sim_view_t* sim)
-{
-    sim->queueStatus[0] = '\0'; // Clear the queue status
-
-    // Add Job Queue Information
-    strncat(sim->queueStatus, "Job Queue: ", sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
-    for (int i = 0; i < sim->processCount; i++) {
-        if (sim->processList[i].state == NEW) {
-            char job[16];
-            snprintf(job, sizeof(job), "P%d ", sim->processList[i].pid);
-            strncat(sim->queueStatus, job, sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
-        }
-    }
-    strncat(sim->queueStatus, "\n", sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
-
-    // Add Ready Queue Information
-    strncat(sim->queueStatus, "Ready Queue: ", sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
-    for (int i = 0; i < sim->processCount; i++) {
-        if (sim->processList[i].state == READY) {
-            char ready[16];
-            snprintf(ready, sizeof(ready), "P%d ", sim->processList[i].pid);
-            strncat(sim->queueStatus, ready, sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1);
-        }
-    }
-}
-
-void SIM_VIEW_UpdateQueue(queue_observer_t* this, const process_queue_t* queue)
-{
-    sim_view_t* sim = NULL;
-    if (this->type == PROC_QUEUE_JOB)
-        sim = (sim_view_t*) this;
-    else if (this->type == PROC_QUEUE_READY)
-        sim = (sim_view_t*) (((unsigned long long) this) - sizeof(queue_observer_t));
-    sim->queueStatus[0] = '\0'; // Clear the queue status
-
-    // Add Job Queue Information
-    if (this->type == PROC_QUEUE_JOB) {
-        sim->queueStatusJob[0] = '\0';
-        strncat(sim->queueStatusJob, "Job Queue:", sizeof(sim->queueStatusJob) - strlen(sim->queueStatusJob) - 1);
-        for (process_queue_node_t* process = queue->front; process != NULL; process = process->next) {
-            char job[16];
-            snprintf(job, sizeof(job), "P%d ", process->process->pid);
-            strncat(sim->queueStatusJob, job, sizeof(sim->queueStatusJob) - strlen(sim->queueStatusJob) - 1);
-        }
-    } else if (this->type == PROC_QUEUE_READY) {
-        sim->queueStatusReady[0] = '\0';
-        strncat(sim->queueStatusReady, "Ready Queue:", sizeof(sim->queueStatusReady) - strlen(sim->queueStatusReady) - 1);
-        for (process_queue_node_t* process = queue->front; process != NULL; process = process->next) {
-            char job[16];
-            snprintf(job, sizeof(job), "P%d ", process->process->pid);
-            strncat(sim->queueStatusReady, job, sizeof(sim->queueStatusReady) - strlen(sim->queueStatusReady) - 1);
-        }
-    }
-
-    snprintf(sim->queueStatus, sizeof(sim->queueStatus) - strlen(sim->queueStatus) - 1, "%s\n%s", sim->queueStatusJob, sim->queueStatusReady);
-}
-
-
-void UpdateProcessInfo(sim_view_t* sim, int index)
-{
-    if (index >= 0 && index < sim->processCount) {
-        snprintf(sim->PInfo, sizeof(sim->PInfo),
-            "PID: %d\nArrival Time: %d\nIO Burst Time: %d\nCPU Burst Time: %d\nCPU Burst Num: %d",
-            sim->processList[index].pid, sim->processList[index].arrivalTime, sim->processList[index].ioBurstTime,
-            sim->processList[index].originalCpuBurstTime, // Use original burst time
-            sim->processList[index].cpuNumber);
-    } else {
-        sim->PInfo[0] = '\0'; // Clear the info box if no valid process is selected
-    }
-}
-
-
-bool AllProcessesTerminated(sim_view_t* sim)
-{
-    for (int i = 0; i < sim->processCount; i++) {
-        if (sim->processList[i].state != TERMINATED) {
-            return false; // Found a process not terminated
-        }
-    }
-    int totalSimulationTime = sim->currentTime;
-    calculateMetrics(sim);
-    return true; // All processes terminated
+    CloseWindow();
 }

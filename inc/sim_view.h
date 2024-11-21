@@ -68,32 +68,6 @@ typedef struct {
 } sim_view_t;
 
 
-// Function to calculate the metrics like CPU utilization, throughput, waiting time, and turnaround time
-void calculateMetrics(sim_view_t* sim);
-
-// FCFS (First Come First Serve) scheduling algorithm
-void FCFS_Scheduler(sim_view_t* sim);
-
-// Terminates the process if its CPU burst time is 0
-void TerminateProcessIfComplete(sim_view_t* sim);
-
-// Starts the scheduler based on the selected scheduling algorithm
-void StartScheduler(sim_view_t* sim);
-
-// Adds processes to the job queue based on the current time and their arrival times
-void JobQueue(sim_view_t* sim);
-
-// Updates the list view content with process information
-void UpdateListViewContent(sim_view_t* sim);
-
-// Updates the queue status to display the current job queue and ready queue
-void UpdateQueueStatus(sim_view_t* sim);
-void SIM_VIEW_UpdateQueue(struct queue_observer_t* this, const process_queue_t* queue);
-
-// Updates information for the selected process in the info display
-void UpdateProcessInfo(sim_view_t* sim, int index);
-
-// Checks if all processes are terminated and calculates metrics if true
-bool AllProcessesTerminated(sim_view_t* sim);
+void SIM_VIEW_LaunchWindows(sim_view_t* view);
 
 #endif
