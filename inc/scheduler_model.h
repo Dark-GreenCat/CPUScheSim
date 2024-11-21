@@ -46,6 +46,8 @@ typedef struct {
     queue_observer_t*     queue_observer[QUEUE_OBSERVER_SIZE];     // Observers for queue events
     int                   queue_observer_list_size;                // Number of queue observer
     process_queue_t       job_queue;
+    int                   job_queue_delay;
+    int                   job_queue_counter;
     process_queue_t       ready_queue;
     process_queue_t       device_queue;
     int                   elapsed_time_ms;

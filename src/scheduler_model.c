@@ -3,12 +3,12 @@
 
 void SCHED_MODEL_Init(scheduler_model_t* model)
 {
-    model->sched_algo               = SCHED_ALGO_FCFS;
-    model->process_list_size        = 0;
+    model->sched_algo                 = SCHED_ALGO_FCFS;
+    model->process_list_size          = 0;
     model->next_process_request_index = 0;
-    model->proc_observer_list_size  = 0;
-    model->sched_observer_list_size = 0;
-    model->queue_observer_list_size = 0;
+    model->proc_observer_list_size    = 0;
+    model->sched_observer_list_size   = 0;
+    model->queue_observer_list_size   = 0;
     memset(model->proc_observer, (int) NULL, PROCESS_OBSERVER_SIZE * sizeof(model->proc_observer[0]));
     memset(model->queue_observer, (int) NULL, QUEUE_OBSERVER_SIZE * sizeof(model->queue_observer[0]));
     memset(model->sched_observer, (int) NULL, SCHEDULER_OBSERVER_SIZE * sizeof(model->sched_observer[0]));
@@ -16,6 +16,9 @@ void SCHED_MODEL_Init(scheduler_model_t* model)
     PROC_QUEUE_Init(&model->job_queue);
     PROC_QUEUE_Init(&model->ready_queue);
     PROC_QUEUE_Init(&model->device_queue);
+
+    model->job_queue_delay   = 200;
+    model->job_queue_counter = 0;
 
     model->elapsed_time_ms = 0;
 }
@@ -27,9 +30,19 @@ void SCHED_MODEL_Simulate(scheduler_model_t* model)
 
     int i = model->next_process_request_index;
     if (i < model->process_list_size && model->process_list[i].request_time_ms == model->elapsed_time_ms) {
+        if (PROC_QUEUE_IsEmpty(&model->job_queue))
+            model->job_queue_counter = 0;
         PROC_QUEUE_Enqueue(&model->job_queue, &model->process_list[i]);
         SCHED_MODEL_NotifyQueueObserver(model);
         model->next_process_request_index++;
+    }
+
+    if (!PROC_QUEUE_IsEmpty(&model->job_queue))
+        model->job_queue_counter++;
+
+    if (model->job_queue_counter == model->job_queue_delay) {
+        SCHED_MODEL_QueueToQueue(model, &model->job_queue, &model->ready_queue);
+        model->job_queue_counter = 0;
     }
     model->elapsed_time_ms++;
 }
@@ -122,7 +135,7 @@ void SCHED_MODEL_InitQueue(scheduler_model_t* model, process_queue_t* job_queue)
 
 void SCHED_MODEL_QueueToQueue(scheduler_model_t* model, process_queue_t* src_queue, process_queue_t* dest_queue)
 {
-    while (!PROC_QUEUE_IsEmpty(src_queue)) {
+    if (!PROC_QUEUE_IsEmpty(src_queue)) {
         process_t* process = PROC_QUEUE_Dequeue(src_queue);
         PROC_QUEUE_Enqueue(dest_queue, process);
     }
