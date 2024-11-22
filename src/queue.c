@@ -11,7 +11,7 @@ queue_node_t* QUEUE_NodeAlloc(size_t size)
 void QUEUE_NodeFree(queue_node_t* node, callback cbFreeNode)
 {
     node->next = NULL;
-    cbFreeNode(node);
+    if (cbFreeNode) cbFreeNode(node);
     free(node);
 }
 

@@ -2,10 +2,14 @@
 
 void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model)
 {
-    controller->model = model;
+    controller->model               = model;
+    view_interface_t view_interface = (view_interface_t) {
+        .addProcess    = OS_CTRL_AddProcess,
+        .removeProcess = OS_CTRL_RemoveProcess,
+    };
 
     SCHED_MODEL_Init(controller->model);
-    SIM_VIEW_Init(&controller->view, (view_interface_t) {OS_CTRL_AddProcess});
+    SIM_VIEW_Init(&controller->view, view_interface);
 }
 
 #warning "OS_CTRL_AddProcess currently has not supported {total_io_burst_ms, num_of_cpu_burst} yet"
@@ -29,4 +33,10 @@ void OS_CTRL_AddProcess(view_interface_t* this, int pid, int request_time_ms, in
     };
 
     SCHED_MODEL_AddProcess(controller->model, &process_info);
+}
+
+void OS_CTRL_RemoveProcess(view_interface_t* this, int pid)
+{
+    os_controller_t* controller = (os_controller_t*) this;
+    SCHED_MODEL_DeleteProcess(controller->model, pid);
 }

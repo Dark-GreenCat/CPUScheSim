@@ -26,9 +26,10 @@ typedef struct {
     ProcessState state;
 } Process;
 
-typedef struct __view_interface_t {
-    void (*addProcess)(struct __view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
+typedef struct view_interface_t {
+    void (*addProcess)(struct view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
         int total_io_burst_ms, int num_of_cpu_burst);
+    void (*removeProcess)(struct view_interface_t* this, int pid);
 } view_interface_t;
 
 typedef struct {

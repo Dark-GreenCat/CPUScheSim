@@ -16,6 +16,8 @@ typedef struct {
 } process_list_t;
 
 process_node_t* PROC_QUEUE_NodeCreate(process_t* process);
-void PROC_QUEUE_NodeFreeAll(process_list_t* list);
+void PROC_QUEUE_Constructor(process_list_t* list);
+void PROC_QUEUE_Destructor(process_list_t* list);
+void PROC_QUEUE_RemoveNode(process_list_t* list, process_t* process);
 
 #endif // PROCESS_QUEUE_H

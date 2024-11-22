@@ -2,14 +2,14 @@
 
 void SCHED_MODEL_Init(scheduler_model_t* model)
 {
-    QUEUE_Constructor(&model->process_list.queue);
+    PROC_QUEUE_Constructor(&model->process_list);
     model->sched_algo      = SCHED_ALGO_FCFS;
     model->elapsed_time_ms = 0;
 }
 
 void SCHED_MODEL_Destructor(scheduler_model_t* model)
 {
-    QUEUE_Destructor(&model->process_list.queue);
+    PROC_QUEUE_Destructor(&model->process_list);
     model->sched_algo      = SCHED_ALGO_FCFS;
     model->elapsed_time_ms = 0;
 }
@@ -17,6 +17,7 @@ void SCHED_MODEL_Destructor(scheduler_model_t* model)
 void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* process)
 {
     process_t* new_process = malloc(sizeof(process_t));
+
     *new_process = (process_t) {
         .pid             = process->pid,
         .priority        = process->priority,
@@ -25,6 +26,22 @@ void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* proc
         .pstate          = PROC_STATE_NEW,
         .prog_trace      = process->prog_trace,
     };
+
+    process_node_t* node = PROC_QUEUE_NodeCreate(new_process);
+    QUEUE_Enqueue(&model->process_list.queue, &node->link);
+}
+
+void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid)
+{
+    if (pid < 0)
+        return;
+
+    for (queue_node_t* node = model->process_list.queue.front; node; node = node->next) {
+        if (((process_node_t*) node)->process->pid == pid) {
+            PROC_QUEUE_RemoveNode(&model->process_list, ((process_node_t*) node)->process);
+            return;
+        }
+    }
 }
 
 

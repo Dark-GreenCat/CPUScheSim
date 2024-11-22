@@ -26,7 +26,7 @@ void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model);
 
 void OS_CTRL_AddProcess(view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
     int total_io_burst_ms, int num_of_cpu_burst);
-
+void OS_CTRL_RemoveProcess(view_interface_t* this, int pid);
 
 #if 0
 /* Public API - Detailed description */
