@@ -10,6 +10,7 @@
 #ifndef SCHEDULER_MODEL_H
 #define SCHEDULER_MODEL_H
 
+#include "observer.h"
 #include "process_queue.h"
 #include "shared_defs.h"
 #include "shared_types.h"
@@ -32,6 +33,7 @@ typedef struct {
     scheduler_algorithm_e sched_algo; // Selected scheduling algorithm
     process_list_t        process_list;
     int                   elapsed_time_ms;
+    proc_subj_intf_t      proc_subj;
 } scheduler_model_t;
 
 
@@ -44,6 +46,8 @@ void SCHED_MODEL_Simulate(scheduler_model_t* model);
 void SCHED_MODEL_SetAlgorithm(scheduler_model_t* model, scheduler_algorithm_e sched_algo);
 void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* process);
 void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid);
+
+void PROC_SUBJ_RegisterObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer);
 
 #if 0
 void SCHED_MODEL_RegisterProcessObserver(scheduler_model_t* model, const process_observer_t* proc_observer);

@@ -44,6 +44,14 @@ void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid)
     }
 }
 
+void PROC_SUBJ_RegisterObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer) {
+    scheduler_model_t temp;
+    size_t intf_offset = (size_t) ((void*) &temp.proc_subj - (void*) &temp);
+    scheduler_model_t* model = (scheduler_model_t*) ((size_t) this - intf_offset);
+
+
+}
+
 
 #if 0
 void SCHED_MODEL_Init(scheduler_model_t* model)
