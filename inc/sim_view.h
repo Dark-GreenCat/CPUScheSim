@@ -27,11 +27,13 @@ typedef struct {
     ProcessState state;
 } Process;
 
-typedef struct view_interface_t {
-    void (*addProcess)(struct view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
+typedef struct view_interface_t view_interface_t;
+struct view_interface_t {
+    void (*addProcess)(view_interface_t* this, int pid, int request_time_ms, int total_cpu_burst_ms,
         int total_io_burst_ms, int num_of_cpu_burst);
-    void (*removeProcess)(struct view_interface_t* this, int pid);
-} view_interface_t;
+    void (*removeProcess)(view_interface_t* this, int pid);
+    const process_t* (*getProcess)(view_interface_t* this, int pid);
+};
 
 typedef struct {
     // queue_observer_t job_observer;
@@ -50,6 +52,8 @@ typedef struct {
     int              selectedScheduler;          // The selected scheduler type
     bool             contextSwitchingEnabled;    // Flag for enabling context switching
     int              activeItem;                 // The currently active item in the simulation
+    int              numOfItem;                  // The number of item in the simulation
+    int              selectedPID;                // The pid of the acitve item
     int              scrollIndex;                // Index for scrolling
     float            currentSize;                // Current size scaling factor
     char             logContent[5000];           // Content of the simulation log

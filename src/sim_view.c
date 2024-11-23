@@ -11,39 +11,41 @@
 void SIM_VIEW_Init(sim_view_t* view, view_interface_t interface)
 {
     *view = (sim_view_t) {
-        .interface               = interface,
-        .proc_obs.updateProcessList = PROC_OBS_UpdateProcessList,
+        .interface                     = interface,
+        .proc_obs.updateProcessList    = PROC_OBS_UpdateProcessList,
         .proc_obs.updateRunningProcess = PROC_OBS_UpdateRunningProcess,
-        .progress                = 0.0f,
-        .currentTime             = 0,
-        .pidCounter              = 1,
-        .processCount            = 0,
-        .baseWidth               = 800,
-        .baseHeight              = 630,
-        .showMessageBox          = false,
-        .messageType             = 0,
-        .selectedScheduler       = 0,
-        .contextSwitchingEnabled = false,
-        .activeItem              = -1,
-        .scrollIndex             = 0,
-        .currentSize             = 100,
-        .logContent              = "",
-        .queueStatus             = "",
-        .Performance             = "",
-        .cpuTimeInput            = 0,
-        .ioTimeInput             = 0,
-        .requestTimeInput        = 0,
-        .cpuNumberInput          = 0,
-        .PInfo                   = "",
-        .listViewContent         = "",
-        .cpuTimeEdit             = false,
-        .ioTimeEdit              = false,
-        .requestTimeEdit         = false,
-        .cpuNumberEdit           = false,
-        .baseTextSize            = 20,
-        .schedulerStarted        = false,
-        .runningProcessIndex     = -1,
-        .processRunning          = false,
+        .progress                      = 0.0f,
+        .currentTime                   = 0,
+        .pidCounter                    = 1,
+        .processCount                  = 0,
+        .baseWidth                     = 800,
+        .baseHeight                    = 630,
+        .showMessageBox                = false,
+        .messageType                   = 0,
+        .selectedScheduler             = 0,
+        .contextSwitchingEnabled       = false,
+        .activeItem                    = -1,
+        .numOfItem                     = 0,
+        .selectedPID                   = -1,
+        .scrollIndex                   = 0,
+        .currentSize                   = 100,
+        .logContent                    = "",
+        .queueStatus                   = "",
+        .Performance                   = "",
+        .cpuTimeInput                  = 0,
+        .ioTimeInput                   = 0,
+        .requestTimeInput              = 0,
+        .cpuNumberInput                = 0,
+        .PInfo                         = "",
+        .listViewContent               = "",
+        .cpuTimeEdit                   = false,
+        .ioTimeEdit                    = false,
+        .requestTimeEdit               = false,
+        .cpuNumberEdit                 = false,
+        .baseTextSize                  = 20,
+        .schedulerStarted              = false,
+        .runningProcessIndex           = -1,
+        .processRunning                = false,
     };
 }
 
@@ -82,7 +84,13 @@ void SIM_VIEW_LaunchWindows(sim_view_t* view)
                 view->cpuTimeInput, view->ioTimeInput, view->cpuNumberInput);
         }
         if (GuiButton((Rectangle) { 130 * scaleX, 60 * scaleY, 100 * scaleX, 30 * scaleY }, "Delete Process")) {
-            // OS_CTRL_DeleteProcess(controller);
+            if (view->activeItem == -1) {
+                view->showMessageBox = true;
+                view->messageType    = 2;
+            } else {
+                view->interface.removeProcess(&view->interface, view->selectedPID);
+                view->activeItem = -1;
+            }
         }
 
         // Toggle edit mode for different inputs
@@ -212,7 +220,28 @@ void SIM_VIEW_LaunchWindows(sim_view_t* view)
 
         // Display selected process information
         if (view->activeItem != -1) {
-            // UpdateProcessInfo(sim, sim->activeItem);
+            char* item_list   = view->listViewContent;
+            int   item_count  = 0;
+            int   item_offset = 0;
+            int   pid;
+
+            while (item_count < view->activeItem) {
+                while (item_list[item_offset++] != ';')
+                    ;
+                item_count++;
+            }
+
+            sscanf(item_list + item_offset + 1, "%d", &pid);
+            view->selectedPID        = pid;
+            const process_t* process = view->interface.getProcess(&view->interface, pid);
+
+            if (process) {
+                snprintf(view->PInfo, sizeof(view->PInfo), "PID: %d\nRequest Time: %d\nTotal CPU Burst Time: %d",
+                    process->pid, process->request_time_ms, process->prog_trace.record[0].duration_ms);
+            }
+        } else {
+            view->selectedPID = -1;
+            view->PInfo[0]    = '\0';
         }
 
         EndDrawing();
@@ -228,6 +257,13 @@ void PROC_OBS_UpdateProcessList(proc_obs_intf_t* this, const process_list_t* lis
     process_node_t* process_node = (process_node_t*) list->queue.front;
     int             offset       = 0;
     int             buffer_size  = sizeof(view->listViewContent);
+
+    view->numOfItem = list->queue.size;
+    // offset += snprintf(view->listViewContent + offset, buffer_size - offset, "Count: %d;", view->numOfItem);
+    if (view->numOfItem == 0) {
+        view->listViewContent[0] = '\0';
+        return;
+    }
 
     for (int i = 0; i < list->queue.size; i++) {
         offset += snprintf(view->listViewContent + offset, buffer_size - offset, "P%d;", process_node->process->pid);
@@ -245,7 +281,8 @@ void PROC_OBS_UpdateProcessList(proc_obs_intf_t* this, const process_list_t* lis
     }
 }
 
-void PROC_OBS_UpdateRunningProcess(proc_obs_intf_t* this, const process_t* process) {
+void PROC_OBS_UpdateRunningProcess(proc_obs_intf_t* this, const process_t* process)
+{
     sim_view_t* view = (void*) this - offsetof(sim_view_t, proc_obs);
 
     snprintf(view->cpuStatus, sizeof(view->cpuStatus), "CPU Status: P%d", process->pid);

@@ -4,34 +4,38 @@
 process_node_t* PROC_QUEUE_NodeCreate(process_t* process)
 {
     process_node_t* node = (process_node_t*) QUEUE_NodeAlloc(sizeof(process_node_t));
-    node->process = process;
+    node->process        = process;
     return node;
 }
 
-void PROC_QUEUE_Constructor(process_list_t* list) {
+void PROC_QUEUE_Constructor(process_list_t* list)
+{
     QUEUE_Constructor(&list->queue);
 }
 
-void PROC_QUEUE_FreeNode(queue_node_t* node) {
+void PROC_QUEUE_FreeNode(queue_node_t* node)
+{
     free(((process_node_t*) node)->process);
 }
 
-void PROC_QUEUE_Destructor(process_list_t* list) {
+void PROC_QUEUE_Destructor(process_list_t* list)
+{
     QUEUE_Destructor(&list->queue, PROC_QUEUE_FreeNode);
 }
 
-void PROC_QUEUE_RemoveNode(process_list_t* list, process_t* process) {
+void PROC_QUEUE_RemoveNode(process_list_t* list, process_t* process)
+{
     if (process == NULL) {
         return;
     }
 
-    queue_t* queue = &list->queue;
-    queue_node_t* current = queue->front;
+    queue_t*      queue    = &list->queue;
+    queue_node_t* current  = queue->front;
     queue_node_t* previous = NULL;
 
     // Traverse the queue to find the node with the matching process
     while (current != NULL) {
-        process_node_t* current_node = (process_node_t*)current;
+        process_node_t* current_node = (process_node_t*) current;
 
         // Check if the current node contains the specified process
         if (current_node->process == process) {
@@ -62,11 +66,32 @@ void PROC_QUEUE_RemoveNode(process_list_t* list, process_t* process) {
 
         // Move to the next node
         previous = current;
-        current = current->next;
+        current  = current->next;
     }
 
     // If we get here, the process was not found in the queue
     // Optionally, you could handle this case with an error message or return value
+}
+
+const process_node_t* PROC_QUEUE_GetNode(process_list_t* list, int pid)
+{
+    queue_t*      queue    = &list->queue;
+    queue_node_t* current  = queue->front;
+
+    // Traverse the queue to find the node with the matching process
+    while (current != NULL) {
+        process_node_t* current_node = (process_node_t*) current;
+
+        // Check if the current node contains the specified process
+        if (current_node->process->pid == pid) {
+            return current_node;
+        }
+
+        // Move to the next node
+        current  = current->next;
+    }
+
+    return NULL;
 }
 
 
@@ -159,4 +184,3 @@ void PROC_QUEUE_RemoveNode(process_list_t* list, process_t* process) {
 
 //     return NULL;
 // }
-

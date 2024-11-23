@@ -1,4 +1,5 @@
 #include "os_controller.h"
+#include <stddef.h>
 
 void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model)
 {
@@ -6,6 +7,7 @@ void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model)
     view_interface_t view_interface = (view_interface_t) {
         .addProcess    = OS_CTRL_AddProcess,
         .removeProcess = OS_CTRL_RemoveProcess,
+        .getProcess    = OS_CTRL_GetProcess,
     };
 
     SCHED_MODEL_Init(controller->model);
@@ -41,4 +43,12 @@ void OS_CTRL_RemoveProcess(view_interface_t* this, int pid)
 {
     os_controller_t* controller = (os_controller_t*) this;
     SCHED_MODEL_DeleteProcess(controller->model, pid);
+}
+
+const process_t* OS_CTRL_GetProcess(view_interface_t* this, int pid)
+{
+    os_controller_t* controller = (void*) this - offsetof(os_controller_t, view);
+    const process_t* process    = PROC_QUEUE_GetNode(&controller->model->process_list, pid)->process;
+
+    return ((process) ? process : NULL);
 }

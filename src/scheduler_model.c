@@ -50,6 +50,7 @@ void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid)
     for (queue_node_t* node = model->process_list.queue.front; node; node = node->next) {
         if (((process_node_t*) node)->process->pid == pid) {
             PROC_QUEUE_RemoveNode(&model->process_list, ((process_node_t*) node)->process);
+            model->proc_subj.notifyProcessList(&model->proc_subj, &model->process_list);
             return;
         }
     }

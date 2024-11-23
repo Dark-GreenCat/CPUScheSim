@@ -3,10 +3,12 @@
 
 #include "process_queue.h"
 
-typedef struct proc_obs_intf_t {
-    void (*updateProcessList)(struct proc_obs_intf_t* this, const process_list_t* list);
-    void (*updateRunningProcess)(struct proc_obs_intf_t* this, const process_t* process);
-} proc_obs_intf_t;
+typedef struct proc_obs_intf_t proc_obs_intf_t;
+struct proc_obs_intf_t {
+    void (*updateProcessList)(proc_obs_intf_t* this, const process_list_t* list);
+    void (*updateRunningProcess)(proc_obs_intf_t* this, const process_t* process);
+    void (*updateSelectedProcess)(proc_obs_intf_t* this, const process_t* process);
+};
 
 #define PROC_SUBJ_MAX_OBSERVERS 1
 
