@@ -10,6 +10,8 @@ void OS_CTRL_Init(os_controller_t* controller, scheduler_model_t* model)
 
     SCHED_MODEL_Init(controller->model);
     SIM_VIEW_Init(&controller->view, view_interface);
+
+    model->proc_subj.registerObserver(&model->proc_subj, &controller->view.proc_obs);
 }
 
 #warning "OS_CTRL_AddProcess currently has not supported {total_io_burst_ms, num_of_cpu_burst} yet"

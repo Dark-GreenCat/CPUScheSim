@@ -48,6 +48,9 @@ void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* proc
 void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid);
 
 void PROC_SUBJ_RegisterObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer);
+void PROC_SUBJ_RemoveObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer);
+void PROC_SUBJ_NotifyProcessList(proc_subj_intf_t* this, const process_list_t* list);
+void PROC_SUBJ_NotifyRunningProcess(proc_subj_intf_t* this, const process_t* process);
 
 #if 0
 void SCHED_MODEL_RegisterProcessObserver(scheduler_model_t* model, const process_observer_t* proc_observer);

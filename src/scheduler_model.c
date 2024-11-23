@@ -1,10 +1,20 @@
 #include "scheduler_model.h"
+#include <stddef.h>
 
 void SCHED_MODEL_Init(scheduler_model_t* model)
 {
     PROC_QUEUE_Constructor(&model->process_list);
     model->sched_algo      = SCHED_ALGO_FCFS;
     model->elapsed_time_ms = 0;
+    model->proc_subj       = (proc_subj_intf_t) {
+              .observer_count       = 0,
+              .registerObserver     = PROC_SUBJ_RegisterObserver,
+              .removeObserver       = PROC_SUBJ_RemoveObserver,
+              .notifyProcessList    = PROC_SUBJ_NotifyProcessList,
+              .notifyRunningProcess = PROC_SUBJ_NotifyRunningProcess,
+    };
+    for (int i = 0; i < PROC_SUBJ_MAX_OBSERVERS; i++)
+        model->proc_subj.observer[i] = NULL;
 }
 
 void SCHED_MODEL_Destructor(scheduler_model_t* model)
@@ -29,6 +39,7 @@ void SCHED_MODEL_AddProcess(scheduler_model_t* model, const process_init_t* proc
 
     process_node_t* node = PROC_QUEUE_NodeCreate(new_process);
     QUEUE_Enqueue(&model->process_list.queue, &node->link);
+    model->proc_subj.notifyProcessList(&model->proc_subj, &model->process_list);
 }
 
 void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid)
@@ -44,12 +55,40 @@ void SCHED_MODEL_DeleteProcess(scheduler_model_t* model, int pid)
     }
 }
 
-void PROC_SUBJ_RegisterObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer) {
-    scheduler_model_t temp;
-    size_t intf_offset = (size_t) ((void*) &temp.proc_subj - (void*) &temp);
-    scheduler_model_t* model = (scheduler_model_t*) ((size_t) this - intf_offset);
+void PROC_SUBJ_RegisterObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer)
+{
+    if (this->observer_count >= PROC_SUBJ_MAX_OBSERVERS)
+        return;
 
+    this->observer[this->observer_count++] = observer;
+}
 
+void PROC_SUBJ_RemoveObserver(proc_subj_intf_t* this, proc_obs_intf_t* observer)
+{
+    for (int i = 0; i < this->observer_count; i++) {
+        if (this->observer[i] == observer) {
+            for (int j = i; j < this->observer_count - 1; j++) {
+                this->observer[j] = this->observer[j + 1];
+            }
+            return;
+        }
+    }
+}
+
+void PROC_SUBJ_NotifyProcessList(proc_subj_intf_t* this, const process_list_t* list)
+{
+    scheduler_model_t* model = (void*) this - offsetof(scheduler_model_t, proc_subj);
+
+    for (int i = 0; i < this->observer_count; i++) {
+        proc_obs_intf_t* observer = this->observer[i];
+        observer->updateProcessList(observer, &model->process_list);
+    }
+}
+
+void PROC_SUBJ_NotifyRunningProcess(proc_subj_intf_t* this, const process_t* process)
+{
+    for (int i = 0; i < this->observer_count; i++)
+        this->observer[i]->updateRunningProcess(this->observer[i], process);
 }
 
 

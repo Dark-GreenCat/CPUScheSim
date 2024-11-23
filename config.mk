@@ -3,7 +3,7 @@ ifeq ($(OS),Windows_NT)
     SHELL := cmd.exe
     RM := rmdir /s /q
     MKDIR := mkdir
-    CCFLAGS += -D WIN32
+    CCFLAGS += -Wl,--subsystem,windows -D WIN32
     RAYLIB_FLAGS += -lgdi32 -lwinmm
     RAYLIB_LIB_DIR += raylib/lib/win64
     ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)

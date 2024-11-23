@@ -3,6 +3,7 @@
 
 #include "sim_view.h"
 #include "os_controller.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +12,8 @@ void SIM_VIEW_Init(sim_view_t* view, view_interface_t interface)
 {
     *view = (sim_view_t) {
         .interface               = interface,
+        .proc_obs.updateProcessList = PROC_OBS_UpdateProcessList,
+        .proc_obs.updateRunningProcess = PROC_OBS_UpdateRunningProcess,
         .progress                = 0.0f,
         .currentTime             = 0,
         .pidCounter              = 1,
@@ -149,10 +152,10 @@ void SIM_VIEW_LaunchWindows(sim_view_t* view)
 
         // Display current process or CPU status
         if (view->processRunning && view->runningProcessIndex != -1) {
-            char cpuStatus[64];
-            snprintf(
-                cpuStatus, sizeof(cpuStatus), "CPU status: P%d ", view->processList[view->runningProcessIndex].pid);
-            GuiLabel((Rectangle) { 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, cpuStatus);
+            // char cpuStatus[64];
+            // snprintf(
+            //     cpuStatus, sizeof(cpuStatus), "CPU status: P%d ", view->processList[view->runningProcessIndex].pid);
+            GuiLabel((Rectangle) { 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, view->cpuStatus);
         } else {
             GuiLabel((Rectangle) { 250 * scaleX, 430 * scaleY, 260 * scaleX, 20 * scaleY }, "CPU status: Idle");
         }
@@ -216,4 +219,34 @@ void SIM_VIEW_LaunchWindows(sim_view_t* view)
     }
 
     CloseWindow();
+}
+
+void PROC_OBS_UpdateProcessList(proc_obs_intf_t* this, const process_list_t* list)
+{
+    sim_view_t* view = (void*) this - offsetof(sim_view_t, proc_obs);
+
+    process_node_t* process_node = (process_node_t*) list->queue.front;
+    int             offset       = 0;
+    int             buffer_size  = sizeof(view->listViewContent);
+
+    for (int i = 0; i < list->queue.size; i++) {
+        offset += snprintf(view->listViewContent + offset, buffer_size - offset, "P%d;", process_node->process->pid);
+
+        if (offset >= buffer_size)
+            break;
+
+        process_node = (process_node_t*) process_node->link.next;
+    }
+
+    if (offset < buffer_size) {
+        view->listViewContent[offset - 1] = '\0';
+    } else {
+        view->listViewContent[buffer_size - 1] = '\0';
+    }
+}
+
+void PROC_OBS_UpdateRunningProcess(proc_obs_intf_t* this, const process_t* process) {
+    sim_view_t* view = (void*) this - offsetof(sim_view_t, proc_obs);
+
+    snprintf(view->cpuStatus, sizeof(view->cpuStatus), "CPU Status: P%d", process->pid);
 }

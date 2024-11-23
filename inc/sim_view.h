@@ -7,6 +7,7 @@
 
 
 #define MAX_PROCESSES 10
+#include "observer.h"
 #include "shared_defs.h"
 #include "shared_types.h"
 #include "stdbool.h"
@@ -36,6 +37,7 @@ typedef struct {
     // queue_observer_t job_observer;
     // queue_observer_t ready_observer;
     view_interface_t interface;
+    proc_obs_intf_t  proc_obs;
     float            progress;                   // Progress of the simulation
     int              currentTime;                // Current time in the simulation
     int              pidCounter;                 // Process ID counter
@@ -51,6 +53,7 @@ typedef struct {
     int              scrollIndex;                // Index for scrolling
     float            currentSize;                // Current size scaling factor
     char             logContent[5000];           // Content of the simulation log
+    char             cpuStatus[50];              // Status of CPU
     char             queueStatusJob[100];        // Status of the queue
     char             queueStatusReady[100];      // Status of the queue
     char             queueStatus[256];           // Status of the queue
@@ -76,5 +79,8 @@ typedef struct {
 
 void SIM_VIEW_Init(sim_view_t* view, view_interface_t interface);
 void SIM_VIEW_LaunchWindows(sim_view_t* view);
+
+void PROC_OBS_UpdateProcessList(proc_obs_intf_t* this, const process_list_t* list);
+void PROC_OBS_UpdateRunningProcess(proc_obs_intf_t* this, const process_t* process);
 
 #endif
